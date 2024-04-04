@@ -1,0 +1,32 @@
+﻿<Window
+    x:Class="CaroGame.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:CaroGame"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="MainWindow"
+    Width="800"
+    Height="800"
+    mc:Ignorable="d">
+
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Margin" Value="0,0,5,0" />
+            <Setter Property="Width" Value="100" />
+        </Style>
+    </Window.Resources>
+
+    <DockPanel>
+        <ToolBar DockPanel.Dock="Top">
+            <Button Command="{Binding RestartGame}" Content="New game" />
+            <Button Command="{Binding RestartGame}" Content="Clear" />
+            <Button Content="Save" />
+        </ToolBar>
+
+        <Canvas
+            x:Name="GameBoard"
+            Margin="16"
+            Background="LightBlue" />
+    </DockPanel>
+</Window>
