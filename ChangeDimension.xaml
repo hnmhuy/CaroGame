@@ -1,0 +1,104 @@
+﻿<Window
+    x:Class="CaroGame.ChangeDimension"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:CaroGame"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:CaroGame.ViewModel"
+    Title="ChangeDimension"
+    Width="400"
+    Height="200"
+    Padding="24"
+    mc:Ignorable="d">
+
+    <Window.Resources>
+
+        <local:DimensionValidationRule x:Key="DimensionValidationRule" />
+
+        <Style TargetType="Button">
+            <Setter Property="Width" Value="100" />
+            <Setter Property="Margin" Value="5" />
+        </Style>
+
+        <Style x:Key="ErrorTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Validation.ErrorTemplate">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <DockPanel>
+                            <Border BorderBrush="Red" BorderThickness="1">
+                                <AdornedElementPlaceholder x:Name="adorner" />
+                            </Border>
+                            <TextBlock
+                                Margin="5,0,0,0"
+                                Foreground="Red"
+                                Text="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=(Validation.Errors)[0].ErrorContent}" />
+                        </DockPanel>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+            <Style.Triggers>
+                <Trigger Property="Validation.HasError" Value="True">
+                    <Setter Property="ToolTip" Value="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=(Validation.Errors)[0].ErrorContent}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+
+    </Window.Resources>
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Vertical">
+            <TextBlock Text="Number of row" />
+            <TextBox x:Name="txtRow" Style="{StaticResource ErrorTextBoxStyle}">
+                <TextBox.Text>
+                    <Binding
+                        Path="SizeRow"
+                        UpdateSourceTrigger="PropertyChanged"
+                        ValidatesOnDataErrors="True">
+                        <Binding.ValidationRules>
+                            <local:DimensionValidationRule />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+            <TextBlock Text="Number of column" />
+            <TextBox x:Name="txtColumn" Style="{StaticResource ErrorTextBoxStyle}">
+                <TextBox.Text>
+                    <Binding
+                        Path="SizeColumn"
+                        UpdateSourceTrigger="PropertyChanged"
+                        ValidatesOnDataErrors="True">
+                        <Binding.ValidationRules>
+                            <local:DimensionValidationRule />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+        </StackPanel>
+
+        <StackPanel
+            Grid.Row="1"
+            HorizontalAlignment="Right"
+            DockPanel.Dock="Bottom"
+            Orientation="Horizontal">
+            <Button
+                Name="Cancel"
+                Click="Cancel_Click"
+                Command="{Binding CancelCommand}"
+                Content="Cancel" />
+            <Button
+                Name="Confirm"
+                Click="Confirm_Click"
+                Command="{Binding ConfirmCommand}"
+                Content="OK"
+                IsEnabled="{Binding CanConfirm}" />
+        </StackPanel>
+    </Grid>
+</Window>

@@ -5,7 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
-namespace CaroGame
+namespace CaroGame.GameMaterial
 {
     public class ChessBoard
     {
@@ -47,13 +47,13 @@ namespace CaroGame
 
         public ChessBoard(Canvas gameBoard, int sizeRow, int sizeColumn)
         {
-            this.Board = gameBoard;
-            this.SizeRow = sizeRow;
-            this.SizeColumn = sizeColumn;
-            this.GenerateChessBoard();
-            this.Board.SizeChanged += GameBoard_SizeChange;
-            this.Board.MouseMove += GameBoard_MouseMove;
-            this.caroStrategy = new CaroStrategy(sizeRow, sizeColumn);
+            Board = gameBoard;
+            SizeRow = sizeRow;
+            SizeColumn = sizeColumn;
+            GenerateChessBoard();
+            Board.SizeChanged += GameBoard_SizeChange;
+            Board.MouseMove += GameBoard_MouseMove;
+            caroStrategy = new CaroStrategy(sizeRow, sizeColumn);
         }
 
 
@@ -64,7 +64,7 @@ namespace CaroGame
             Point pos = e.GetPosition(Board);
             if (pos == mousePos) return;
             mousePos = pos;
-            if (this.cursor.Type == MarkType.None) this.cursor.Type = playingRole;
+            if (cursor.Type == MarkType.None) cursor.Type = playingRole;
 
             int row = (int)(pos.Y / _cellHeight);
             int col = (int)(pos.X / _cellWidth);
@@ -127,8 +127,8 @@ namespace CaroGame
 
         private void GenerateChessBoard()
         {
-            this.Board.Children.Clear();
-            this.Board.Background = _boardColor;
+            Board.Children.Clear();
+            Board.Background = _boardColor;
 
             double width = Board.ActualWidth;
             double height = Board.ActualHeight;
@@ -144,9 +144,9 @@ namespace CaroGame
                     Canvas.SetTop(_cell, i * _cellHeight);
                 }
             }
-            this.cursor = new Mark(_cellWidth, _cellHeight, MarkType.None, true);
+            cursor = new Mark(_cellWidth, _cellHeight, MarkType.None, true);
             cursor.MouseDown += Cell_MouseDown;
-            this.Board.Children.Add(this.cursor);
+            Board.Children.Add(cursor);
         }
 
         private Point CalIndexOfCell(Rectangle rect)
@@ -166,8 +166,8 @@ namespace CaroGame
 
             if ((Keyboard.GetKeyStates(key) & KeyStates.Down) > 0 && key != Key.Return)
             {
-                if (this.cursor.Type == MarkType.None) this.cursor.Type = playingRole;
-                Point currPos = this.cursor.GetIndex();
+                if (cursor.Type == MarkType.None) cursor.Type = playingRole;
+                Point currPos = cursor.GetIndex();
                 switch (key)
                 {
                     case Key.Up:
@@ -185,11 +185,11 @@ namespace CaroGame
                     default:
                         break;
                 }
-                this.cursor.SetIndex((int)currPos.X, (int)currPos.Y);
+                cursor.SetIndex((int)currPos.X, (int)currPos.Y);
             }
             else if (key == Key.Return)
             {
-                MarkACell(this.cursor.GetIndex());
+                MarkACell(cursor.GetIndex());
             }
         }
 
@@ -202,20 +202,20 @@ namespace CaroGame
             //this.cursor.Type = MarkType.None;
             //playingRole = playingRole == MarkType.Cross ? MarkType.Circle : MarkType.Cross;
 
-            if (this.caroStrategy.Mark(index, playingRole))
+            if (caroStrategy.Mark(index, playingRole))
             {
                 Mark newMark = new Mark(_cellWidth, _cellHeight, playingRole);
                 Board.Children.Add(newMark);
                 newMark.SetIndex(index);
                 playingRole = playingRole == MarkType.Cross ? MarkType.Circle : MarkType.Cross;
                 newMark.Color = playingRole == MarkType.Cross ? Brushes.Orange : Brushes.Blue;
-                if (this.caroStrategy.IsOver(index) && this.caroStrategy.Winner != MarkType.None)
+                if (caroStrategy.IsOver(index) && caroStrategy.Winner != MarkType.None)
                 {
                     DrawWinningLine();
-                    MessageBox.Show("The winner is: " + this.caroStrategy.Winner);
+                    MessageBox.Show("The winner is: " + caroStrategy.Winner);
                     RestartGame();
                 }
-                this.cursor.Type = MarkType.None;
+                cursor.Type = MarkType.None;
             }
             else
             {
@@ -227,16 +227,16 @@ namespace CaroGame
 
         public void RestartGame()
         {
-            this.caroStrategy.ResetGame();
-            this.Board.Children.Clear();
-            this.GenerateChessBoard();
+            caroStrategy.ResetGame();
+            Board.Children.Clear();
+            GenerateChessBoard();
         }
 
         private void DrawWinningLine()
         {
             // Get the smallest and the largest point in the list
-            Point min = this.caroStrategy.listPoint.OrderBy(p => p.X).ThenBy(p => p.Y).First();
-            Point max = this.caroStrategy.listPoint.OrderByDescending(p => p.X).ThenByDescending(p => p.Y).First();
+            Point min = caroStrategy.listPoint.OrderBy(p => p.X).ThenBy(p => p.Y).First();
+            Point max = caroStrategy.listPoint.OrderByDescending(p => p.X).ThenByDescending(p => p.Y).First();
             // Draw the line
 
             Line line = new Line()
@@ -249,7 +249,7 @@ namespace CaroGame
                 StrokeThickness = 5
             };
 
-            this.Board.Children.Add(line);
+            Board.Children.Add(line);
         }
 
         public static void RestartGame(ChessBoard chessBoard)
@@ -259,6 +259,14 @@ namespace CaroGame
                 return;
             }
             else chessBoard.RestartGame();
+        }
+
+        public void Resize(int sizeRow, int sizeColumn)
+        {
+            SizeRow = sizeRow;
+            SizeColumn = sizeColumn;
+            this.caroStrategy.Resize(sizeRow, sizeColumn);
+            RestartGame();
         }
     }
 }

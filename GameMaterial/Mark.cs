@@ -3,7 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
-namespace CaroGame
+namespace CaroGame.GameMaterial
 {
     public enum MarkType { None, Cross, Circle }
     public class Mark : Canvas
@@ -21,7 +21,7 @@ namespace CaroGame
             set
             {
                 _type = value;
-                UpdateMark(this.haveBorder);
+                UpdateMark(haveBorder);
             }
         }
         public Brush Color
@@ -42,13 +42,13 @@ namespace CaroGame
 
         public Mark(double width, double height, MarkType type, bool haveBorder = false)
         {
-            this.Width = width;
-            this.Height = height;
+            Width = width;
+            Height = height;
             this.haveBorder = haveBorder;
-            this.Type = type;
-            this.RowIndex = 0;
-            this.colIndex = 0;
-            this.Background = null;
+            Type = type;
+            RowIndex = 0;
+            colIndex = 0;
+            Background = null;
         }
 
         public int RowIndex
@@ -68,29 +68,29 @@ namespace CaroGame
 
         private void GenerateRect()
         {
-            Rectangle rect = new Rectangle() { Width = this.Width, Height = this.Height, Stroke = this.Color, StrokeThickness = 2, Fill = this._background };
+            Rectangle rect = new Rectangle() { Width = Width, Height = Height, Stroke = Color, StrokeThickness = 2, Fill = _background };
             //if (Type != MarkType.None) rect.Fill = this._background;
-            this.Children.Add(rect);
+            Children.Add(rect);
         }
 
         private void GenerateEllipse()
         {
-            double circleSize = Math.Abs(Math.Min(this.Width, this.Height) - 20);
-            Ellipse ellipse = new Ellipse() { Width = circleSize, Height = circleSize, Stroke = this.Color, StrokeThickness = 2 };
-            this.Children.Add(ellipse);
-            SetTop(ellipse, (this.Height - circleSize) / 2);
-            SetLeft(ellipse, (this.Width - circleSize) / 2);
+            double circleSize = Math.Abs(Math.Min(Width, Height) - 20);
+            Ellipse ellipse = new Ellipse() { Width = circleSize, Height = circleSize, Stroke = Color, StrokeThickness = 2 };
+            Children.Add(ellipse);
+            SetTop(ellipse, (Height - circleSize) / 2);
+            SetLeft(ellipse, (Width - circleSize) / 2);
         }
 
         private void GenerateCross()
         {
-            int crossSize = Math.Abs(Math.Min((int)this.Width, (int)this.Height) - 20);
-            int startX = (int)(this.Width - crossSize) / 2;
-            int startY = (int)(this.Height - crossSize) / 2;
-            Line line1 = new Line() { X1 = startX, Y1 = startY, X2 = this.Width - startX, Y2 = this.Height - startY, Stroke = this.Color, StrokeThickness = 2 };
-            Line line2 = new Line() { X1 = this.Width - startX, Y1 = startY, X2 = startX, Y2 = this.Height - startY, Stroke = this.Color, StrokeThickness = 2 };
-            this.Children.Add(line1);
-            this.Children.Add(line2);
+            int crossSize = Math.Abs(Math.Min((int)Width, (int)Height) - 20);
+            int startX = (int)(Width - crossSize) / 2;
+            int startY = (int)(Height - crossSize) / 2;
+            Line line1 = new Line() { X1 = startX, Y1 = startY, X2 = Width - startX, Y2 = Height - startY, Stroke = Color, StrokeThickness = 2 };
+            Line line2 = new Line() { X1 = Width - startX, Y1 = startY, X2 = startX, Y2 = Height - startY, Stroke = Color, StrokeThickness = 2 };
+            Children.Add(line1);
+            Children.Add(line2);
         }
 
         public void UpdateColor()
@@ -99,20 +99,20 @@ namespace CaroGame
             {
                 if (item is Shape shape)
                 {
-                    shape.Stroke = this.Color;
+                    shape.Stroke = Color;
                 }
             }
         }
 
         public void UpdateMark(bool haveBorder = false)
         {
-            this.Children.Clear();
+            Children.Clear();
             if (haveBorder)
             {
                 GenerateRect();
                 Opacity = 0.5;
             }
-            switch (this.Type)
+            switch (Type)
             {
                 case MarkType.Cross:
                     GenerateCross();
@@ -131,12 +131,12 @@ namespace CaroGame
 
         public void ScaleMark(double scaleX, double scaleY)
         {
-            this.Width *= scaleX;
-            this.Height *= scaleY;
-            double newSize = Math.Abs(Math.Min(this.Width, this.Height) - 20);
-            double offsetX = (this.Width - newSize) / 2;
-            double offsetY = (this.Height - newSize) / 2;
-            foreach (var item in this.Children)
+            Width *= scaleX;
+            Height *= scaleY;
+            double newSize = Math.Abs(Math.Min(Width, Height) - 20);
+            double offsetX = (Width - newSize) / 2;
+            double offsetY = (Height - newSize) / 2;
+            foreach (var item in Children)
             {
                 if (item is Shape shape)
                 {
@@ -144,8 +144,8 @@ namespace CaroGame
                     {
                         ellipse.Width = newSize;
                         ellipse.Height = newSize;
-                        Canvas.SetLeft(ellipse, (Width - newSize) / 2);
-                        Canvas.SetTop(ellipse, (Height - newSize) / 2);
+                        SetLeft(ellipse, (Width - newSize) / 2);
+                        SetTop(ellipse, (Height - newSize) / 2);
                     }
                     else if (item is Rectangle rect)
                     {
@@ -171,8 +171,8 @@ namespace CaroGame
                     }
                 }
             }
-            Canvas.SetLeft(this, Canvas.GetLeft(this) * scaleX);
-            Canvas.SetTop(this, Canvas.GetTop(this) * scaleY);
+            SetLeft(this, GetLeft(this) * scaleX);
+            SetTop(this, GetTop(this) * scaleY);
         }
 
         public void SetIndex(Point point)
@@ -187,12 +187,12 @@ namespace CaroGame
             SetPosition();
         }
 
-        public Point GetIndex() { return new Point(this.colIndex, this.rowIndex); }
+        public Point GetIndex() { return new Point(colIndex, rowIndex); }
 
         public void SetPosition()
         {
-            Canvas.SetLeft(this, colIndex * this.Width);
-            Canvas.SetTop(this, rowIndex * this.Height);
+            SetLeft(this, colIndex * Width);
+            SetTop(this, rowIndex * Height);
         }
     }
 }

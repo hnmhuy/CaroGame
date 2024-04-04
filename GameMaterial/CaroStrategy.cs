@@ -1,7 +1,7 @@
 ﻿
 using System.Windows;
 
-namespace CaroGame
+namespace CaroGame.GameMaterial
 {
     public class CaroStrategy
     {
@@ -28,8 +28,8 @@ namespace CaroGame
 
         public CaroStrategy(int sizeRow, int sizeColumn)
         {
-            this.SizeRow = sizeRow;
-            this.SizeColumn = sizeColumn;
+            SizeRow = sizeRow;
+            SizeColumn = sizeColumn;
             // Generate the board with default value is 0
             board = new int[sizeRow, sizeColumn];
             ResetGame();
@@ -37,13 +37,7 @@ namespace CaroGame
 
         public void ResetGame()
         {
-            for (int i = 0; i < board.GetLength(0); i++)
-            {
-                for (int j = 0; j < board.GetLength(1); j++)
-                {
-                    board[i, j] = (int)MarkType.None;
-                }
-            }
+            Array.Clear(board, (int)MarkType.None, board.Length);
         }
 
         public bool Mark(Point pos, MarkType role)
@@ -55,6 +49,15 @@ namespace CaroGame
                 return true;
             }
             else return false;
+        }
+
+        public void Resize(int row, int col)
+        {
+            this.SizeRow = row;
+            this.SizeColumn = col;
+            // Delete the current board
+            board = new int[row, col];
+            Array.Clear(board, (int)MarkType.None, board.Length);
         }
 
         public bool IsOver(Point pos)

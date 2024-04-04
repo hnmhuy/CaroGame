@@ -22,6 +22,10 @@
             <Button Command="{Binding RestartGame}" Content="New game" />
             <Button Command="{Binding RestartGame}" Content="Clear" />
             <Button Content="Save" />
+            <Button
+                Name="ChangeSize"
+                Click="ChangeSize_Click"
+                Content="Change board size" />
         </ToolBar>
 
         <Canvas
