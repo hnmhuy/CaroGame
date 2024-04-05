@@ -19,8 +19,13 @@ namespace CaroGame.GameMaterial
         public Mark cursor;
         private bool isControlByKeyboard = false;
         private Point mousePos;
+        private bool disableKeyboard = false;
         private CaroStrategy caroStrategy;
         public MarkType playingRole = MarkType.Cross;
+        private Line? winingLine = null;
+
+        private MediaPlayer foregroundPlayer;
+
 
         // Getters and setters
         public Brush CellColor
@@ -54,6 +59,9 @@ namespace CaroGame.GameMaterial
             Board.SizeChanged += GameBoard_SizeChange;
             Board.MouseMove += GameBoard_MouseMove;
             caroStrategy = new CaroStrategy(sizeRow, sizeColumn);
+            foregroundPlayer = new MediaPlayer();
+
+            foregroundPlayer.Open(new System.Uri("./Sounds/mark.wav", System.UriKind.Relative));
         }
 
 
@@ -92,6 +100,13 @@ namespace CaroGame.GameMaterial
                 {
                     mark.ScaleMark(scaleX, scaleY);
                 }
+                else if (item is Line line)
+                {
+                    line.X1 *= scaleX;
+                    line.X2 *= scaleX;
+                    line.Y1 *= scaleY;
+                    line.Y2 *= scaleY;
+                }
             }
         }
 
@@ -127,6 +142,8 @@ namespace CaroGame.GameMaterial
 
         private void GenerateChessBoard()
         {
+            Board.IsEnabled = true;
+            this.disableKeyboard = false;
             Board.Children.Clear();
             Board.Background = _boardColor;
 
@@ -147,6 +164,7 @@ namespace CaroGame.GameMaterial
             cursor = new Mark(_cellWidth, _cellHeight, MarkType.None, true);
             cursor.MouseDown += Cell_MouseDown;
             Board.Children.Add(cursor);
+            this.cursor.Opacity = 0.5;
         }
 
         private Point CalIndexOfCell(Rectangle rect)
@@ -163,7 +181,7 @@ namespace CaroGame.GameMaterial
 
         public void MoveCursor(Key key)
         {
-
+            if (disableKeyboard) return;
             if ((Keyboard.GetKeyStates(key) & KeyStates.Down) > 0 && key != Key.Return)
             {
                 if (cursor.Type == MarkType.None) cursor.Type = playingRole;
@@ -193,6 +211,12 @@ namespace CaroGame.GameMaterial
             }
         }
 
+        public void playSound(string filename)
+        {
+            foregroundPlayer.Open(new System.Uri("./Sounds/" + filename, System.UriKind.Relative));
+            foregroundPlayer.Play();
+        }
+
         public void MarkACell(Point index)
         {
             //Mark mark = new Mark(_cellWidth, _cellHeight, playingRole);
@@ -204,16 +228,36 @@ namespace CaroGame.GameMaterial
 
             if (caroStrategy.Mark(index, playingRole))
             {
+
                 Mark newMark = new Mark(_cellWidth, _cellHeight, playingRole);
+                playSound("mark.wav");
                 Board.Children.Add(newMark);
                 newMark.SetIndex(index);
                 playingRole = playingRole == MarkType.Cross ? MarkType.Circle : MarkType.Cross;
                 newMark.Color = playingRole == MarkType.Cross ? Brushes.Orange : Brushes.Blue;
-                if (caroStrategy.IsOver(index) && caroStrategy.Winner != MarkType.None)
+                if (caroStrategy.IsOver(index))
                 {
-                    DrawWinningLine();
-                    MessageBox.Show("The winner is: " + caroStrategy.Winner);
-                    RestartGame();
+                    playSound("winning.wav");
+                    string message;
+                    if (caroStrategy.Winner != MarkType.None)
+                    {
+                        DrawWinningLine();
+                        message = "The winner is: " + caroStrategy.Winner + "!!! Do you want to restart the game?";
+                    }
+                    else
+                    {
+                        message = "The game is draw!!! Do you want to restart the game?";
+                    }
+                    var res = MessageBox.Show(message, "Notification", MessageBoxButton.YesNo);
+                    if (res == MessageBoxResult.Yes)
+                    {
+                        RestartGame();
+                    }
+                    else
+                    {
+                        this.Board.IsEnabled = false;
+                        disableKeyboard = true;
+                    }
                 }
                 cursor.Type = MarkType.None;
             }
@@ -230,6 +274,7 @@ namespace CaroGame.GameMaterial
             caroStrategy.ResetGame();
             Board.Children.Clear();
             GenerateChessBoard();
+
         }
 
         private void DrawWinningLine()
@@ -246,10 +291,11 @@ namespace CaroGame.GameMaterial
                 X2 = max.X * _cellWidth + _cellWidth / 2,
                 Y2 = max.Y * _cellHeight + _cellHeight / 2,
                 Stroke = Brushes.Red,
-                StrokeThickness = 5
+                StrokeThickness = 3
             };
 
             Board.Children.Add(line);
+            this.winingLine = line;
         }
 
         public static void RestartGame(ChessBoard chessBoard)
@@ -267,6 +313,52 @@ namespace CaroGame.GameMaterial
             SizeColumn = sizeColumn;
             this.caroStrategy.Resize(sizeRow, sizeColumn);
             RestartGame();
+        }
+
+        public void SaveGame(string filename)
+        {
+            // Save as binary file
+            caroStrategy.SaveGame(filename);
+        }
+
+        public void LoadGame(string filename)
+        {
+            // Load the game from the file
+            caroStrategy.LoadGame(filename);
+            this.playingRole = caroStrategy.CurRole == MarkType.Cross ? MarkType.Circle : MarkType.Cross;
+            this.cursor.Type = playingRole;
+            this.SizeColumn = caroStrategy.SizeColumn;
+            this.SizeRow = caroStrategy.SizeRow;
+            // Reload the game board
+            this.Board.Children.Clear();
+            GenerateChessBoard();
+            RemarkGame(caroStrategy.Board);
+            if (caroStrategy.Winner != MarkType.None)
+            {
+                DrawWinningLine();
+                MessageBox.Show("The winner is: " + caroStrategy.Winner);
+                this.Board.IsEnabled = false;
+                disableKeyboard = true;
+                // remove the cursor
+                this.Board.Children.Remove(cursor);
+            }
+        }
+
+        private void RemarkGame(int[,] board)
+        {
+            for (int i = 0; i < SizeRow; i++)
+            {
+                for (int j = 0; j < SizeColumn; j++)
+                {
+                    if (board[i, j] != 0)
+                    {
+                        Mark mark = new Mark(_cellWidth, _cellHeight, (MarkType)board[i, j]);
+                        mark.SetIndex(i, j);
+                        mark.Color = board[i, j] == (int)MarkType.Cross ? Brushes.Blue : Brushes.Orange;
+                        Board.Children.Add(mark);
+                    }
+                }
+            }
         }
     }
 }

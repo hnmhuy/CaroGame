@@ -21,7 +21,14 @@
         <ToolBar DockPanel.Dock="Top">
             <Button Command="{Binding RestartGame}" Content="New game" />
             <Button Command="{Binding RestartGame}" Content="Clear" />
-            <Button Content="Save" />
+            <Button
+                Name="Save"
+                Click="Save_Click"
+                Content="Save" />
+            <Button
+                Name="Load"
+                Click="Load_Click"
+                Content="Load" />
             <Button
                 Name="ChangeSize"
                 Click="ChangeSize_Click"

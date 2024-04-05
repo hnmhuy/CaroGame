@@ -48,7 +48,6 @@ namespace CaroGame.GameMaterial
             Type = type;
             RowIndex = 0;
             colIndex = 0;
-            Background = null;
         }
 
         public int RowIndex
