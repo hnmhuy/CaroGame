@@ -49,6 +49,8 @@ namespace CaroGame.GameMaterial
 
         public void ResetGame()
         {
+            curRole = MarkType.None;
+            winner = MarkType.None;
             Array.Clear(board, (int)MarkType.None, board.Length);
             _markedCount = 0;
         }
